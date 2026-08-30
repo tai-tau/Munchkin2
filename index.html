@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>שולחן מאנצ'קין</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;800&family=Secular+One&family=Suez+One&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--felt:#1B4332;--rail:#4A2C17;--gold:#E8B317;--parch:#F2E4C2;--parch2:#E2CFA2;
+ --ink:#17120D;--door:#9A2B1C;--treas:#C89218;--cream:#FBF3DF}
+body{background:#0E1A14;color:var(--cream);font-family:'Assistant',system-ui,sans-serif;
+ font-size:17px;overflow:hidden;height:100vh}
+button{font-family:inherit;cursor:pointer;border:0}
+:focus-visible{outline:2.5px solid var(--gold);outline-offset:2px}
+
+#gate{display:grid;place-items:center;height:100vh;padding:1.5rem}
+.gbox{background:#1A2620;border:2px solid var(--rail);border-radius:18px;padding:2rem;max-width:360px;width:100%;text-align:center}
+.gbox h1{font-family:'Suez One',serif;font-size:1.7rem;margin-bottom:.4rem}
+.gbox p{color:#8FA89A;font-size:1rem;margin-bottom:1.4rem;line-height:1.5}
+input{width:100%;background:#0E1A14;border:1.5px solid var(--rail);border-radius:9px;color:var(--cream);
+ padding:.7rem;font-family:inherit;font-size:1.1rem;margin-bottom:.8rem;text-align:center}
+.big{background:var(--gold);color:#1A1409;border-radius:9px;padding:.85rem;font-weight:800;font-size:1.15rem;width:100%}
+
+#app{display:none;grid-template-rows:auto 1fr auto;height:100vh}
+#top{display:flex;align-items:center;gap:.6rem;padding:.5rem .9rem;background:#12211A;
+ border-bottom:2px solid var(--rail);flex-wrap:wrap;font-size:.95rem}
+.mini{background:none;border:1.5px solid var(--rail);color:#B8CFC2;border-radius:7px;
+ padding:.4rem .75rem;font-size:.95rem;font-weight:600}
+.mini:hover{border-color:var(--gold);color:var(--gold)}
+.spacer{flex:1}
+#turnname{font-family:'Suez One',serif;color:var(--gold);font-size:1.15rem}
+
+/* --- שולחן --- */
+#felt{position:relative;margin:.7rem 1rem;border:14px solid var(--rail);border-radius:50%/34%;
+ background:radial-gradient(ellipse at 50% 45%,#2A6B4F 0%,var(--felt) 48%,#0F2C20 100%);
+ box-shadow:inset 0 0 100px #0007,inset 0 0 0 3px #ffffff12,0 8px 40px #000a;overflow:visible}
+#seats{position:absolute;inset:0;pointer-events:none}
+.seat{position:absolute;transform:translate(50%,-50%);pointer-events:auto;background:#0B1712ee;
+ border:2px solid var(--rail);border-radius:13px;padding:.55rem .8rem;min-width:165px;box-shadow:0 4px 14px #0007}
+.seat.act{border-color:var(--gold);box-shadow:0 0 22px #E8B31755}
+.seat.me{border-color:#5E9E5A}
+.sname{font-weight:800;font-size:1.05rem}
+.sstat{font-family:'Secular One',sans-serif;font-size:.9rem;color:#9DB8A8;margin-top:.1rem}
+.mini-cards{display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.3rem}
+.mc{background:#16241C;border:1px solid #3A3428;border-radius:5px;padding:.15rem .4rem;font-size:.82rem;cursor:pointer}
+.mc:hover{border-color:var(--gold)}
+.mc.bag{opacity:.55;border-style:dashed}
+
+/* --- מרכז --- */
+#center{position:absolute;top:50%;right:50%;transform:translate(50%,-50%);
+ display:flex;gap:1.4rem;align-items:flex-start}
+.pile{text-align:center;cursor:pointer}
+.pileface{width:104px;height:145px;border-radius:9px;border:3px solid var(--ink);
+ display:grid;place-items:center;font-family:'Secular One',sans-serif;font-size:1.5rem;
+ color:var(--cream);box-shadow:0 4px 0 #0006,0 8px 18px #0007;transition:transform .12s}
+.pile:hover .pileface{transform:translateY(-5px)}
+.pileface.door{background:repeating-linear-gradient(45deg,#9A2B1C,#9A2B1C 8px,#7E2216 8px,#7E2216 16px)}
+.pileface.treas{background:repeating-linear-gradient(45deg,#C89218,#C89218 8px,#A87A12 8px,#A87A12 16px);color:#2A2008}
+.pilelbl{font-size:.9rem;color:#B8CFC2;margin-top:.35rem}
+.disc{width:104px;height:145px;border-radius:9px;border:2px dashed #ffffff30;display:grid;place-items:center;
+ font-size:.85rem;color:#8FA89A;cursor:pointer;background:#00000025}
+.disc:hover{border-color:var(--gold);color:var(--gold)}
+#boardzone{position:absolute;bottom:4%;right:50%;transform:translateX(50%);display:flex;gap:.6rem;
+ flex-wrap:wrap;justify-content:center;max-width:86%}
+#boardzone .card{box-shadow:0 6px 20px #0009}
+
+/* --- קלף --- */
+.card{position:relative;width:var(--w,130px);height:calc(var(--w,130px)*1.3968);
+ font-size:calc(var(--w,130px)/13);background:var(--parch);color:var(--ink);
+ border:.3em solid var(--ink);border-radius:.55em;display:flex;flex-direction:column;
+ overflow:hidden;text-align:right;flex-shrink:0;cursor:pointer;transition:transform .13s}
+.card:hover{transform:translateY(-7px);z-index:5}
+.card.dragging{opacity:.4}
+.card.door{--d:var(--door);--di:var(--cream)}
+.card.treasure{--d:var(--treas);--di:var(--ink)}
+.ct{font-family:'Suez One',serif;font-size:1.05em;line-height:1.14;text-align:center;padding:.42em .3em;
+ background:var(--d);color:var(--di);border-bottom:.3em solid var(--ink);min-height:2.3em;
+ display:flex;align-items:center;justify-content:center}
+.ca{position:relative;flex:0 0 21%;margin:.35em .4em .25em;border:.18em solid var(--ink);
+ border-radius:.25em;background:var(--parch2);display:grid;place-items:center;font-size:2em}
+.cl{position:absolute;bottom:-.1em;inset-inline-start:-.1em;background:var(--ink);color:var(--parch);
+ border-radius:.3em;padding:.05em .45em .15em;font-family:'Secular One',sans-serif;font-size:1.35em}
+.cb{flex:1;padding:.2em .55em;overflow-y:auto;line-height:1.3;
+ scrollbar-width:thin;scrollbar-color:#00000030 transparent;
+ -webkit-mask-image:linear-gradient(#000 88%,#0000 100%);mask-image:linear-gradient(#000 88%,#0000 100%)}
+.cb::-webkit-scrollbar{width:5px}
+.cb::-webkit-scrollbar-thumb{background:#00000035;border-radius:3px}
+.cb::-webkit-scrollbar-track{background:transparent}
+.cbad{color:#7A1E10}
+.cf{margin-top:auto;display:flex;justify-content:space-between;background:var(--d);color:var(--di);
+ border-top:.28em solid var(--ink);padding:.22em .5em .28em;font-family:'Secular One',sans-serif;font-size:.8em}
+
+/* --- תחתית --- */
+#bottom{background:#12211A;border-top:2px solid var(--rail);padding:.5rem .9rem;display:flex;gap:.8rem;align-items:flex-start}
+.zonebox{border:2px solid var(--rail);border-radius:11px;padding:.4rem .55rem;min-width:190px;max-width:290px}
+.zonebox.gear{border-color:#3D6B4F;background:#0E211A}
+.zonebox.bag{border-color:#5A4A33;background:#1A1712}
+.zonebox h4{font-size:.85rem;color:#8FA89A;margin-bottom:.3rem;font-weight:700}
+.zcards{display:flex;gap:.25rem;flex-wrap:wrap;min-height:34px;max-height:96px;overflow-y:auto}
+#hand{display:flex;gap:.55rem;overflow-x:auto;flex:1;min-height:168px;padding-bottom:.25rem}
+#side{display:flex;flex-direction:column;gap:.35rem;min-width:150px}
+.ctr{display:flex;align-items:center;gap:.35rem;background:#0E1A14;border-radius:7px;padding:.3rem .5rem;font-size:.95rem}
+.ctr b{font-family:'Secular One',sans-serif;font-size:1.25rem;min-width:1.5rem;text-align:center}
+.tiny{background:none;border:1px solid var(--rail);color:#B8CFC2;border-radius:5px;width:26px;height:26px;font-size:1rem}
+.drop{outline:3px dashed var(--gold);outline-offset:3px;background:#E8B31712}
+
+/* --- חלונות --- */
+.ov{position:fixed;inset:0;background:#0A130Eee;display:none;place-items:center;z-index:70;padding:1.2rem}
+.ovbox{background:#1A2620;border:2px solid var(--rail);border-radius:14px;padding:1.3rem;
+ max-width:min(900px,94vw);max-height:92vh;overflow-y:auto}
+#peekbox{display:flex;gap:1.4rem;align-items:flex-start;flex-wrap:wrap}
+.act{background:var(--gold);color:#1A1409;border-radius:8px;padding:.7rem 1rem;font-weight:800;font-size:1.05rem;width:100%}
+.act.g{background:#2D6A4F;color:var(--cream)}
+.act.r{background:#7A2E1E;color:var(--cream)}
+.keys{font-size:.85rem;color:#7A9488;margin-top:.5rem;line-height:1.5}
+kbd{background:#0E1A14;border:1px solid var(--rail);border-radius:4px;padding:.05rem .35rem;font-family:monospace}
+#discrow{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+#log{position:fixed;bottom:.6rem;inset-inline-start:.6rem;width:340px;max-height:40vh;overflow-y:auto;
+ background:#12211Af0;border:1.5px solid var(--rail);border-radius:10px;padding:.6rem;font-size:.9rem;
+ line-height:1.55;color:#9DB8A8;display:none;z-index:40}
+#logb{position:fixed;bottom:.6rem;inset-inline-start:.6rem;z-index:41;background:#12211A;
+ border:1.5px solid var(--rail);color:#B8CFC2;border-radius:8px;padding:.4rem .8rem;font-size:.9rem}
+#toast{position:fixed;top:.8rem;left:50%;transform:translateX(-50%);background:var(--gold);color:#1A1409;
+ padding:.7rem 1.2rem;border-radius:12px;font-weight:700;font-size:1rem;z-index:90;display:none;max-width:90vw;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="gate"><div class="gbox">
+  <h1>שולחן מאנצ'קין</h1>
+  <p>הקלפים בידיכם. המערכת רק מנהלת את הערימות.</p>
+  <input id="nm" placeholder="השם שלך" maxlength="14">
+  <button class="big" onclick="join()">שב לשולחן</button>
+</div></div>
+
+<div id="app">
+  <div id="top">
+    <span id="turnname"></span>
+    <button class="mini" onclick="go('nextTurn')">תור הבא ⟵</button>
+    <span class="spacer"></span>
+    <button class="mini" onclick="doRoll()">🎲</button>
+    <button class="mini" onclick="rename()" id="mename"></button>
+    <button class="mini" onclick="go('clearBoard')">פנה שולחן</button>
+    <button class="mini" onclick="newGame()">משחק חדש</button>
+  </div>
+
+  <div id="felt">
+    <div id="seats"></div>
+    <div id="center">
+      <div>
+        <div class="pile" onclick="peek('door')">
+          <div class="pileface door" id="dcount">0</div>
+          <div class="pilelbl">דלת</div></div>
+        <div class="disc" style="margin-top:.5rem" onclick="showDisc('door')" id="ddisc">זרוקים</div>
+      </div>
+      <div>
+        <div class="pile" onclick="peek('treasure')">
+          <div class="pileface treas" id="tcount">0</div>
+          <div class="pilelbl">אוצר</div></div>
+        <div class="disc" style="margin-top:.5rem" onclick="showDisc('treasure')" id="tdisc">זרוקים</div>
+      </div>
+    </div>
+    <div id="boardzone"></div>
+  </div>
+
+  <div id="bottom">
+    <div id="hand"></div>
+    <div class="zonebox gear" id="gearbox"><h4>🛡 מצויד</h4><div class="zcards" id="gearz"></div></div>
+    <div class="zonebox bag" id="bagbox"><h4>🎒 תיק</h4><div class="zcards" id="bagz"></div></div>
+    <div id="side">
+      <div class="ctr">דרגה <button class="tiny" onclick="go('lvl',{d:-1})">−</button>
+        <b id="lv">1</b><button class="tiny" onclick="go('lvl',{d:1})">+</button></div>
+      <div class="ctr">אאורה <button class="tiny" onclick="go('aura',{d:-1})">−</button>
+        <b id="au">0</b><button class="tiny" onclick="go('aura',{d:1})">+</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="peekov"><div class="ovbox"><div id="peekbox"></div></div></div>
+<div class="ov" id="cardov" onclick="if(event.target.id=='cardov')close_('cardov')"><div class="ovbox" id="cardbox"></div></div>
+<div class="ov" id="discov" onclick="if(event.target.id=='discov')close_('discov')"><div class="ovbox">
+  <h3 id="disctitle" style="font-family:'Suez One';margin-bottom:.8rem"></h3>
+  <div id="discrow"></div></div></div>
+
+<button id="logb" onclick="tl()">יומן</button>
+<div id="log"></div>
+<div id="toast"></div>
+
+<script>
+let PID=localStorage.getItem("tpid")||"", ST=null, DRAG=null;
+const api=async(a,x)=>(await fetch("/do",{method:"POST",headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({action:a,pid:PID,...x||{}})})).json();
+async function go(a,x){const r=await api(a,x);if(r&&r.err)toast(r.err);await load();return r}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";
+ clearTimeout(t._);t._=setTimeout(()=>t.style.display="none",4000)}
+function tl(){const l=document.getElementById("log");l.style.display=l.style.display=="block"?"none":"block"}
+function close_(id){document.getElementById(id).style.display="none"}
+
+async function join(){const n=document.getElementById("nm").value.trim();if(!n)return;
+ const r=await api("join",{name:n});PID=r.id;localStorage.setItem("tpid",PID);
+ document.getElementById("gate").style.display="none";
+ document.getElementById("app").style.display="grid";load()}
+async function rename(){const n=prompt("שם חדש:",ST.you.name);if(n&&n.trim())go("rename",{name:n.trim()})}
+async function newGame(){if(confirm("לחלק מחדש? כל הקלפים יאותחלו."))go("newGame")}
+async function doRoll(){const r=await api("roll");toast("🎲 "+r.roll);load()}
+
+/* ---------- קלף ---------- */
+const TY={curse:"קללה",trap:"מלכודת",enhancer:"מחזק",weakener:"מחליש",trait:"אופי",class:"מקצוע",
+ base:"בסיס",exemption:"פטור",origin:"סיפור מקור",oneshot:"חד־פעמי",special:"עלה דרגה",
+ rule:"כלל בית",item:"ציוד",monster:"מפלצת"};
+/* גופן לפי אורך: קצר → ענק, ארוך → גלילה */
+function textScale(c){
+ const n=((c.text||"")+(c.badStuff||"")).length;
+ if(n<90) return 1.55;
+ if(n<130) return 1.35;
+ if(n<160) return 1.2;
+ if(n<200) return 1.05;
+ if(n<260) return .95;
+ if(n<340) return .86;
+ return .8;
+}
+function card(c,w,drag){
+ const ts=textScale(c);
+ const f=c.type=="monster"?`<span>${c.treasures||0} אוצרות</span><span>${c.levels||1}+ דרגה</span>`
+  :`<span>${c.gold!=null?c.gold+" זהב":TY[c.type]||""}</span><span>${c.slot||""}</span>`;
+ return `<div class="card ${c.deck}" style="--w:${w}px" ${drag?`draggable="true"
+   ondragstart="dstart(event,'${c.uid}')" ondragend="dend(event)"`:""} onclick="openCard('${c.uid}')">
+  <div class="ct">${c.name}</div>
+  <div class="ca">${c.art||""}${c.level!=null?`<div class="cl">${c.level}</div>`:""}</div>
+  <div class="cb" style="font-size:${ts}em">${c.text||""}${c.badStuff?`<div class="cbad"><b>רע:</b> ${c.badStuff}</div>`:""}</div>
+  <div class="cf">${f}</div></div>`}
+
+/* ---------- גרירה ---------- */
+function dstart(e,u){DRAG=u;e.target.classList.add("dragging");e.dataTransfer.setData("text",u)}
+function dend(e){DRAG=null;e.target.classList.remove("dragging");
+ document.querySelectorAll(".drop").forEach(x=>x.classList.remove("drop"))}
+function dover(e){e.preventDefault();e.currentTarget.classList.add("drop")}
+function dleave(e){e.currentTarget.classList.remove("drop")}
+async function ddrop(e,dest,toId){e.preventDefault();e.currentTarget.classList.remove("drop");
+ if(!DRAG)return;const u=DRAG;DRAG=null;await go("move",{uid:u,dest,toId})}
+
+/* ---------- שליפה מערימה ---------- */
+async function peek(which){const r=await api("peekTop",{which});
+ if(r.err){toast(r.err);return}load()}
+function showPeek(){
+ const c=ST.peek;
+ const box=document.getElementById("peekbox");
+ if(!c){document.getElementById("peekov").style.display="none";return}
+ box.innerHTML=card(c,300)+`
+  <div style="display:flex;flex-direction:column;gap:.5rem;min-width:210px">
+   <div style="font-size:1rem;color:#9DB8A8">${TY[c.type]||""} — רק אתה רואה</div>
+   <button class="act g" onclick="pk('hand')">קח ליד <kbd>1</kbd></button>
+   <button class="act" onclick="pk('board')">הצג לכולם <kbd>2</kbd></button>
+   <button class="act" onclick="pk('gear')">צייד <kbd>3</kbd></button>
+   <button class="act" onclick="pk('bag')">לתיק <kbd>4</kbd></button>
+   <button class="act r" onclick="pk('discard')">זרוק <kbd>5</kbd></button>
+   <button class="mini" onclick="pk('back')">החזר לערימה <kbd>0</kbd></button>
+   <div class="keys">אפשר גם במקלדת. בטלפון — פשוט לחצו.</div>
+  </div>`;
+ document.getElementById("peekov").style.display="grid"}
+async function pk(to){document.getElementById("peekov").style.display="none";await go("resolvePeek",{to})}
+document.addEventListener("keydown",e=>{
+ if(!ST||!ST.peek)return;
+ const m={"1":"hand","2":"board","3":"gear","4":"bag","5":"discard","0":"back"};
+ if(m[e.key])pk(m[e.key])});
+
+/* ---------- זרוקים ---------- */
+function showDisc(w){const arr=ST.discards[w];
+ document.getElementById("disctitle").textContent=
+  (w=="door"?"זרוקי דלת":"זרוקי אוצר")+` — ${arr.length} קלפים, מהישן לחדש`;
+ document.getElementById("discrow").innerHTML=arr.length
+  ?arr.map(c=>card(c,165,true)).join(""):'<div style="color:#7A9488">ריק</div>';
+ document.getElementById("discov").style.display="grid"}
+
+/* ---------- חלון קלף ---------- */
+function findCard(u){
+ for(const z of ["hand","gear","bag"])for(const c of (ST.you?.[z]||[]))if(c.uid==u)return{c,z,mine:true};
+ for(const c of ST.board)if(c.uid==u)return{c,z:"board"};
+ for(const p of ST.players)for(const z of ["gear","bag"])for(const c of p[z])if(c.uid==u)return{c,z,pid:p.id,pn:p.name};
+ for(const w of ["door","treasure"])for(const c of ST.discards[w])if(c.uid==u)return{c,z:"discard"};
+ return null}
+function openCard(u){const f=findCard(u);if(!f)return;const c=f.c;
+ const others=ST.players.filter(p=>p.id!=PID);
+ let h=card(c,300)+`<div style="display:flex;flex-direction:column;gap:.45rem;min-width:210px">
+  <div style="font-size:1rem;color:#9DB8A8">${TY[c.type]||""}${f.pn?" — של "+f.pn:""}</div>
+  <button class="act g" onclick="mv('${u}','hand')">קח ליד</button>
+  <button class="act" onclick="mv('${u}','gear')">צייד אותי</button>
+  <button class="act" onclick="mv('${u}','bag')">לתיק שלי</button>
+  <button class="act" onclick="mv('${u}','board')">הצג לכולם</button>
+  ${others.map(p=>`<button class="mini" onclick="mv('${u}','gear','${p.id}')">צייד את ${p.name}</button>`).join("")}
+  ${others.map(p=>`<button class="mini" onclick="mv('${u}','hand','${p.id}')">תן ל${p.name}</button>`).join("")}
+  <button class="act r" onclick="mv('${u}','discard')">לזרוקים (${c.deck=="door"?"דלת":"אוצר"})</button>
+  <button class="mini" onclick="mv('${u}','deckTop')">לראש הערימה</button>
+  <button class="mini" onclick="mv('${u}','deckBottom')">לתחתית הערימה</button></div>`;
+ document.getElementById("cardbox").innerHTML=h;
+ document.getElementById("cardbox").style.display="flex";
+ document.getElementById("cardbox").style.gap="1.4rem";
+ document.getElementById("cardbox").style.flexWrap="wrap";
+ document.getElementById("cardov").style.display="grid"}
+async function mv(u,dest,toId){close_("cardov");close_("discov");await go("move",{uid:u,dest,toId})}
+
+/* ---------- ציור ---------- */
+async function load(){
+ const r=await fetch("/state?pid="+PID);ST=await r.json();if(!ST.you)return;
+ document.getElementById("turnname").textContent="תורו של "+ST.turnName;
+ document.getElementById("mename").textContent="✏ "+ST.you.name;
+ document.getElementById("dcount").textContent=ST.decks.door;
+ document.getElementById("tcount").textContent=ST.decks.treasure;
+ document.getElementById("ddisc").textContent="זרוקים "+ST.discards.door.length;
+ document.getElementById("tdisc").textContent="זרוקים "+ST.discards.treasure.length;
+ document.getElementById("lv").textContent=ST.you.level;
+ document.getElementById("au").textContent=ST.you.aura;
+
+ const N=ST.players.length,wide=innerWidth>860,mi=ST.players.findIndex(p=>p.id==PID);
+ document.getElementById("seats").innerHTML=ST.players.map((p,i)=>{
+  let pos="";
+  if(wide){const k=((i-mi)+N)%N,ang=Math.PI/2+(k/N)*2*Math.PI;
+   pos=`right:${50+44*Math.cos(ang)}%;top:${50+43*Math.sin(ang)}%;`}
+  const mini=(arr,cls)=>arr.map(c=>`<span class="mc ${cls}" onclick="openCard('${c.uid}')">${c.art||""} ${c.name.slice(0,11)}</span>`).join("");
+  return `<div class="seat ${p.id==ST.turnId?'act':''} ${p.id==PID?'me':''}" style="${pos}"
+   ondragover="dover(event)" ondragleave="dleave(event)" ondrop="ddrop(event,'gear','${p.id}')">
+   <div class="sname">${p.name}${p.peeking?" 👁":""}</div>
+   <div class="sstat">דרגה ${p.level} · אאורה ${p.aura} · ${p.hand} ביד</div>
+   ${p.gear.length?`<div class="mini-cards">${mini(p.gear,"")}</div>`:""}
+   ${p.bag.length?`<div class="mini-cards">${mini(p.bag,"bag")}</div>`:""}</div>`}).join("");
+
+ document.getElementById("boardzone").innerHTML=ST.board.map(c=>card(c,225,true)).join("");
+ document.getElementById("hand").innerHTML=ST.you.hand.map(c=>card(c,190,true)).join("")
+  ||'<div style="color:#7A9488;padding:1rem">היד ריקה — לחצו על ערימה כדי לשלוף</div>';
+ const mz=(arr)=>arr.map(c=>`<span class="mc" onclick="openCard('${c.uid}')">${c.art||""} ${c.name.slice(0,13)}</span>`).join("")
+  ||'<span style="color:#5F7A6E;font-size:.85rem">ריק</span>';
+ document.getElementById("gearz").innerHTML=mz(ST.you.gear);
+ document.getElementById("bagz").innerHTML=mz(ST.you.bag);
+ document.getElementById("log").innerHTML=ST.log.map(l=>`<div>${l.m}</div>`).join("");
+ showPeek();
+}
+
+/* אזורי שחרור */
+addEventListener("DOMContentLoaded",()=>{
+ const z=(id,dest)=>{const e=document.getElementById(id);if(!e)return;
+  e.ondragover=dover;e.ondragleave=dleave;e.ondrop=(ev)=>ddrop(ev,dest)};
+ z("hand","hand");z("gearbox","gear");z("bagbox","bag");z("felt","board");
+ z("ddisc","discard");z("tdisc","discard");z("boardzone","board");
+});
+
+if(PID)fetch("/state?pid="+PID).then(r=>r.json()).then(s=>{if(s.you){
+ document.getElementById("gate").style.display="none";
+ document.getElementById("app").style.display="grid";load()}});
+setInterval(()=>{if(PID&&ST)load()},1600);
+</script>
+</body>
+</html>
