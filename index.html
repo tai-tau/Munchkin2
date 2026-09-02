@@ -191,7 +191,8 @@ kbd{background:#0E1A14;border:1px solid var(--rail);border-radius:4px;padding:.0
 let PID=localStorage.getItem("tpid")||"", ST=null, DRAG=null;
 const api=async(a,x)=>(await fetch("/do",{method:"POST",headers:{"Content-Type":"application/json"},
  body:JSON.stringify({action:a,pid:PID,...x||{}})})).json();
-async function go(a,x){const r=await api(a,x);if(r&&r.err)toast(r.err);await load();return r}
+async function go(a,x){const r=await api(a,x);if(r&&r.err)toast(r.err);await load();
+ setTimeout(load,120);return r}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";
  clearTimeout(t._);t._=setTimeout(()=>t.style.display="none",4000)}
 function tl(){const l=document.getElementById("log");l.style.display=l.style.display=="block"?"none":"block"}
@@ -255,7 +256,7 @@ function showPeek(){
    <button class="act" onclick="pk('gear')">צייד <kbd>3</kbd></button>
    <button class="act" onclick="pk('bag')">לתיק <kbd>4</kbd></button>
    <button class="act r" onclick="pk('discard')">זרוק <kbd>5</kbd></button>
-   <button class="mini" onclick="pk('back')">החזר לערימה <kbd>0</kbd></button>
+   <button class="mini" onclick="pk('back')">החזר לראש הערימה <kbd>0</kbd></button>
    <div class="keys">אפשר גם במקלדת. בטלפון — פשוט לחצו.</div>
   </div>`;
  document.getElementById("peekov").style.display="grid"}
@@ -347,7 +348,10 @@ addEventListener("DOMContentLoaded",()=>{
 if(PID)fetch("/state?pid="+PID).then(r=>r.json()).then(s=>{if(s.you){
  document.getElementById("gate").style.display="none";
  document.getElementById("app").style.display="grid";load()}});
-setInterval(()=>{if(PID&&ST)load()},1600);
+let busy=false;
+async function poll(){if(!PID||busy)return;busy=true;try{await load()}finally{busy=false}}
+setInterval(poll,700);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll()});
 </script>
 </body>
 </html>
